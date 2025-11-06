@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Menü Görüntüleme</title>
+  <style>
+    html,body{
+      margin:0; padding:0; width:100vw; height:100vh;
+      background:#000; overflow:hidden; cursor:none;
+    }
+    #wrap{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000;
+    }
+    /* Canvas ekranda orantılı dursun */
+    canvas{ width:100vw; height:100vh; object-fit:contain; display:block; background:#000; }
+    #tap{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      color:#888; font:16px system-ui; transition:opacity .4s; background:rgba(0,0,0,.35);
+    }
+    #tap.hide{ opacity:0; pointer-events:none; }
+  </style>
+</head>
+<body>
+  <div id="wrap"><canvas id="c"></canvas></div>
+  <div id="tap">Tam ekran için tıklayın</div>
+
+  <script type="module">
+    import { getDocument, GlobalWorkerOptions } from '/pdfjs/pdf.mjs';
+    GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.mjs';
+
+    const canvas = document.getElementById('c');
+    const ctx    = canvas.getContext('2d');
+
+    async function renderFirstPage() {
+      try {
+        const url = '/menu.pdf?v=' + Date.now();
+        const pdf = await getDocument(url).promise;
+        const page = await pdf.getPage(1);
+
+        // 1) PDF'in kendi rotasyonunu al
+        let rot = (page.rotate || 0) % 360;
+
+        // 2) Ölçüleri scale=1 ile öğren
+        let vp = page.getViewport({ scale: 1, rotation: rot });
+
+        // 3) Eğer hâlâ dikeyse 90° çevir (TV için landscape’e zorla)
+        if (vp.height > vp.width) {
+          rot = (rot + 90) % 360;
+          vp  = page.getViewport({ scale: 1, rotation: rot });
+        }
+
+        // 4) Ekranı pikselleriyle dolduracak ölçek (retina/dpr dahil)
+        const dpr   = window.devicePixelRatio || 1;
+        const scale = Math.min(
+          (window.innerWidth  * dpr) / vp.width,
+          (window.innerHeight * dpr) / vp.height
+        );
+
+        // 5) Nihai viewport ve canvas piksel boyutları
+        const finalVp = page.getViewport({ scale, rotation: rot });
+        canvas.width  = Math.floor(finalVp.width);
+        canvas.height = Math.floor(finalVp.height);
+
+        // 6) Çiz
+        await page.render({ canvasContext: ctx, viewport: finalVp }).promise;
+        // console.log(`[index] render OK (rot=${rot}, scale=${scale.toFixed(2)}, dpr=${dpr})`);
+      } catch (err) {
+        console.error('PDF yüklenemedi:', err);
+      }
+    }
+
+    // ilk yükleme
+    renderFirstPage();
+
+    // PDF değişince yenile
+    const es = new EventSource('/events');
+    es.onmessage = renderFirstPage;
+    setInterval(renderFirstPage, 15000);
+
+    // pencere boyutu değişirse yeniden çiz (zoom oranını koru)
+    window.addEventListener('resize', () => {
+      // hızlı arka arkaya gelirse biraz geciktir
+      clearTimeout(window.__rAF);
+      window.__rAF = setTimeout(renderFirstPage, 120);
+    });
+
+    // tam ekran
+    async function goFull(){
+      try{
+        if(!document.fullscreenElement && document.documentElement.requestFullscreen)
+          await document.documentElement.requestFullscreen();
+      }catch{}
+      document.getElementById('tap').classList.add('hide');
+    }
+    document.addEventListener('click', goFull);
+    document.addEventListener('keydown', e => { if (e.key === 'f') goFull(); });
+    if (new URLSearchParams(location.search).get('fs') === '1') setTimeout(goFull, 400);
+  </script>
+</body>
+</html>

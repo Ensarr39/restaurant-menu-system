@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Menü Yönetimi</title>
+  <style>
+    :root{ color-scheme: dark light; }
+    *{ box-sizing:border-box }
+    body{
+      margin:0;
+      font:15px ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:#eaecef;
+      /* modern ama sade arka plan */
+      background:
+        radial-gradient(1100px 500px at 15% -10%, rgba(59,130,246,.08), transparent),
+        radial-gradient(900px 500px at 110% 20%, rgba(99,102,241,.06), transparent),
+        #0b0b0c;
+    }
+    .wrap{ max-width:900px; margin:7vh auto; padding:0 16px }
+    .card{
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),
+        #15161a;
+      border:1px solid #1f2430; border-radius:18px;
+      box-shadow:0 16px 40px rgba(0,0,0,.38); padding:26px 26px;
+    }
+    .title{ font-size:24px; font-weight:800; margin:0 0 8px }
+    .sub{ color:#9aa0a6; margin:0 0 20px }
+    .section{ background:#0f1013; border:1px solid #23262b; border-radius:14px; padding:18px; margin:14px 0 }
+    .row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+    .grid3{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px }
+    @media (max-width:820px){ .grid3{ grid-template-columns:1fr } }
+    hr{ border:0; border-top:1px solid #23262b; margin:18px 0 }
+    .muted{ color:#9aa0a6 }
+    .ok{ color:#9fe870; font-weight:700 }
+
+    /* ---------- Dosya Seç: beyaz kutu + siyah yazı ---------- */
+   /* ---------- Dosya Seç: koyu lacivert kutu + beyaz yazı ---------- */
+input[type=file]{
+  padding:10px 12px;
+  background:#1e3a8a;       /* koyu lacivert */
+  color:#ffffff;            /* beyaz yazı */
+  border:1px solid #2b3f9e; /* tonlu kenar */
+  border-radius:12px;
+}
+
+/* yeni tarayıcılar */
+input[type="file"]::file-selector-button{
+  margin-right:12px; padding:10px 12px;
+  border-radius:10px; border:1px solid #2b3f9e;
+  background:#1e3a8a; color:#ffffff;
+  cursor:pointer; transition:.2s ease;
+}
+input[type="file"]::file-selector-button:hover{
+  filter:brightness(1.15);
+}
+
+/* webkit fallback */
+input[type="file"]::-webkit-file-upload-button{
+  margin-right:12px; padding:10px 12px;
+  border-radius:10px; border:1px solid #2b3f9e;
+  background:#1e3a8a; color:#ffffff;
+  cursor:pointer; transition:.2s ease;
+}
+input[type="file"]::-webkit-file-upload-button:hover{
+  filter:brightness(1.15);
+}
+
+
+    /* ---------- Tüm butonlar mavi ---------- */
+    .btn{
+      appearance:none; border:1px solid transparent; cursor:pointer;
+      padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
+      background:linear-gradient(180deg,#3b82f6,#2563eb); color:#fff;
+      transition:transform .04s ease, filter .2s ease, box-shadow .2s ease;
+      box-shadow:0 6px 18px rgba(37,99,235,.25);
+    }
+    .btn:hover{ filter:brightness(1.05) }
+    .btn:active{ transform:translateY(1px) }
+    .btn:focus-visible{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(59,130,246,.35), 0 6px 18px rgba(37,99,235,.25);
+    }
+    /* secondary ve ghost da mavi kalsın */
+    .btn.secondary, .btn.ghost{
+      background:linear-gradient(180deg,#3b82f6,#2563eb); color:#fff; border-color:transparent;
+    }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; filter:none; box-shadow:none }
+
+    /* login overlay */
+    #lock{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.65); backdrop-filter: blur(4px);
+    }
+    #lock .box{
+      width:min(420px,90vw); background:#15161a; border:1px solid #23262b; border-radius:16px;
+      padding:22px 20px; box-shadow:0 12px 36px rgba(0,0,0,.35)
+    }
+    #lock h2{ margin:0 0 12px; font-size:20px }
+    #pass{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid #2b3036;
+      background:#0f1013; color:#eaecef; outline:none
+    }
+    #err{ color:#f87171; font-weight:700; min-height:18px; margin-top:8px }
+    .shake{ animation:shake .28s }
+    @keyframes shake{10%{transform:translateX(-6px)}30%{transform:translateX(6px)}50%{transform:translateX(-4px)}70%{transform:translateX(4px)}100%{transform:translateX(0)}}
+
+    /* footer status */
+    #stat{ color:#9aa0a6; font-size:13px; margin-top:8px }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 class="title">Menü Yönetimi</h1>
+      <p class="sub">PDF’yi yükleyin. Sunucu PNG’yi otomatik üretir ve TV sayfasına <b>tek sefer</b> yenile sinyali gönderir.</p>
+
+      <!-- PDF Yükle -->
+      <div class="section">
+        <h3 style="margin:0 0 10px">PDF Yükle</h3>
+        <form id="up" class="row" action="/upload" method="post" enctype="multipart/form-data">
+          <input type="file" name="pdf" accept="application/pdf,.pdf" required />
+          <button class="btn" type="submit">Yükle ve Kaydet</button>
+        </form>
+        <div class="muted">Kaydedilen dosya: <b>storage/menu.pdf</b></div>
+        <p id="msg" class="ok" style="margin-top:8px"></p>
+      </div>
+
+      <!-- TV / İşlemler -->
+      <div class="section">
+        <h3 style="margin:0 0 10px">TV / İşlemler</h3>
+        <div class="grid3">
+          <!-- link/endpointlere dokunulmadı -->
+          <a class="btn" href="/" target="_blank" rel="noopener">TV’yi Aç (Tam Ekran PNG)</a>
+          <a class="btn secondary" href="/menu.pdf" target="_blank" rel="noopener">PDF’yi Gör</a>
+          <a class="btn ghost" href="/open" target="_self">Adobe’de Aç</a>
+        </div>
+
+        <hr>
+
+        <!-- Manuel Yenileme -->
+        <div class="row">
+          <button class="btn secondary" id="btnRefresh">TV’yi Yenile (tek sefer)</button>
+          <button class="btn ghost" id="btnRebuild">PDF’ten Yeniden Üret + Yenile</button>
+          <span id="hint" class="muted" style="margin-left:auto"></span>
+        </div>
+      </div>
+
+      <div class="muted" id="stat">Sistem aktif.</div>
+    </div>
+  </div>
+
+  <!-- Parola ekranı -->
+  <div id="lock" hidden>
+    <div class="box">
+      <h2>Giriş</h2>
+      <p class="muted" style="margin:0 0 12px">Yönetim paneline erişmek için parolayı girin.</p>
+      <input id="pass" type="password" placeholder="Parola" autocomplete="current-password" />
+      <div id="err"></div>
+      <div class="row" style="margin-top:12px">
+        <button id="go" class="btn" style="width:100%">Giriş Yap</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---------- Login (DOM’dan tamamen kaldırma – kesin çözüm) ---------- */
+    (function(){
+      const NEED = "admin854962";
+      const lock = document.getElementById('lock');
+      const pass = document.getElementById('pass');
+      const go   = document.getElementById('go');
+      const err  = document.getElementById('err');
+
+      function removeLock(){
+        try{ lock.remove(); }catch{}
+        try{ document.body.style.overflow = "auto"; }catch{}
+      }
+
+      // Kalıcı oturum: localStorage
+      const urlPw  = new URLSearchParams(location.search).get('pw');
+      const authed = (localStorage.getItem("panel_auth_ok")==="1") || (urlPw && urlPw===NEED);
+
+      if (authed){
+        localStorage.setItem("panel_auth_ok","1");
+        removeLock();
+      } else {
+        lock.hidden = false;
+        document.body.style.overflow = "hidden";
+        setTimeout(()=>{ try{ pass.focus(); pass.select(); }catch{} }, 80);
+      }
+
+      function tryLogin(){
+        const v = (pass.value || "").trim();
+        if (!v){ err.textContent = "Lütfen parolayı girin."; return; }
+        if (v === NEED){
+          localStorage.setItem("panel_auth_ok","1");
+          removeLock();
+        } else {
+          err.textContent = "Parola hatalı.";
+          pass.classList.add("shake");
+          setTimeout(()=>pass.classList.remove("shake"),300);
+        }
+      }
+
+      go.addEventListener("click", tryLogin);
+      pass.addEventListener("keyup", e => { if (e.key === "Enter") tryLogin(); });
+    })();
+
+    /* ---------- Upload sonrası mesaj ---------- */
+    (function(){
+      const p = new URLSearchParams(location.search);
+      if (p.get('ok')) {
+        document.getElementById('msg').textContent =
+          'PDF yüklendi. PNG üretiliyor; hazır olunca TV tek sefer yenilenecek.';
+        history.replaceState(null, "", location.pathname);
+      }
+    })();
+
+    /* ---------- Manuel yenileme butonları ---------- */
+    const hint = document.getElementById('hint');
+
+    async function callOne(urls){
+      for (const u of urls){
+        try{
+          const r = await fetch(u, { method:'POST' });
+          if (r.ok) return true;
+        }catch(_){}
+      }
+      return false;
+    }
+
+    document.getElementById('btnRefresh').onclick = async ()=>{
+      hint.textContent = 'Yenileme sinyali gönderiliyor...';
+      const ok = await callOne(['/admin/refresh-screen','/refresh']);
+      hint.textContent = ok ? 'Gönderildi.' : 'Yenileme ucu bulunamadı.';
+      setTimeout(()=>hint.textContent='', 2500);
+    };
+
+    document.getElementById('btnRebuild').onclick = async ()=>{
+      hint.textContent = 'PNG yeniden üretiliyor...';
+      const ok = await callOne(['/admin/rerender-and-refresh','/rerender']);
+      hint.textContent = ok ? 'Üretildi, TV yenilenecek.' : 'Üretme ucu bulunamadı.';
+      setTimeout(()=>hint.textContent='', 3000);
+    };
+
+    /* ---------- Küçük durum bilgisi ---------- */
+    async function ping(){
+      try{
+        const r = await fetch('/health', { cache:'no-store' });
+        if (r.ok){
+          const j = await r.json();
+          document.getElementById('stat').textContent =
+            'Sistem aktif – son kontrol: ' + new Date(j.ts).toLocaleTimeString();
+        }
+      }catch(_){}
+    }
+    ping(); setInterval(ping, 15000);
+  </script>
+</body>
+</html>

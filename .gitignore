@@ -1,0 +1,4 @@
+node_modules/ 
+storage/ 
+public/menu_*.png 
+.env 
