@@ -35,38 +35,34 @@
     .muted{ color:#9aa0a6 }
     .ok{ color:#9fe870; font-weight:700 }
 
-    /* ---------- Dosya Seç: beyaz kutu + siyah yazı ---------- */
-   /* ---------- Dosya Seç: koyu lacivert kutu + beyaz yazı ---------- */
-input[type=file]{
-  padding:10px 12px;
-  background:#1e3a8a;       /* koyu lacivert */
-  color:#ffffff;            /* beyaz yazı */
-  border:1px solid #2b3f9e; /* tonlu kenar */
-  border-radius:12px;
-}
-
-/* yeni tarayıcılar */
-input[type="file"]::file-selector-button{
-  margin-right:12px; padding:10px 12px;
-  border-radius:10px; border:1px solid #2b3f9e;
-  background:#1e3a8a; color:#ffffff;
-  cursor:pointer; transition:.2s ease;
-}
-input[type="file"]::file-selector-button:hover{
-  filter:brightness(1.15);
-}
-
-/* webkit fallback */
-input[type="file"]::-webkit-file-upload-button{
-  margin-right:12px; padding:10px 12px;
-  border-radius:10px; border:1px solid #2b3f9e;
-  background:#1e3a8a; color:#ffffff;
-  cursor:pointer; transition:.2s ease;
-}
-input[type="file"]::-webkit-file-upload-button:hover{
-  filter:brightness(1.15);
-}
-
+    /* ---------- Dosya Seç: koyu lacivert kutu + beyaz yazı ---------- */
+    input[type=file]{
+      padding:10px 12px;
+      background:#1e3a8a;       /* koyu lacivert */
+      color:#ffffff;            /* beyaz yazı */
+      border:1px solid #2b3f9e; /* tonlu kenar */
+      border-radius:12px;
+    }
+    /* yeni tarayıcılar */
+    input[type="file"]::file-selector-button{
+      margin-right:12px; padding:10px 12px;
+      border-radius:10px; border:1px solid #2b3f9e;
+      background:#1e3a8a; color:#ffffff;
+      cursor:pointer; transition:.2s ease;
+    }
+    input[type="file"]::file-selector-button:hover{
+      filter:brightness(1.15);
+    }
+    /* webkit fallback */
+    input[type="file"]::-webkit-file-upload-button{
+      margin-right:12px; padding:10px 12px;
+      border-radius:10px; border:1px solid #2b3f9e;
+      background:#1e3a8a; color:#ffffff;
+      cursor:pointer; transition:.2s ease;
+    }
+    input[type="file"]::-webkit-file-upload-button:hover{
+      filter:brightness(1.15);
+    }
 
     /* ---------- Tüm butonlar mavi ---------- */
     .btn{
@@ -167,7 +163,7 @@ input[type="file"]::-webkit-file-upload-button:hover{
   <script>
     /* ---------- Login (DOM’dan tamamen kaldırma – kesin çözüm) ---------- */
     (function(){
-      const NEED = "admin854962";
+      const NEED = "admin9049";
       const lock = document.getElementById('lock');
       const pass = document.getElementById('pass');
       const go   = document.getElementById('go');
